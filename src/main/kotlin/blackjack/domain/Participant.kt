@@ -28,6 +28,10 @@ sealed class Participant(private val hand: Hand) {
         }
     }
 
+    fun matchBlackjack(): Boolean {
+        return hand.isBackJack()
+    }
+
     private fun matchOf(other: Participant): MatchType {
         return when {
             isBust -> MatchType.LOSE
