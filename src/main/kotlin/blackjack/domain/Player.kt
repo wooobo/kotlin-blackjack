@@ -8,6 +8,18 @@ open class Player(val playerName: EntrantName, private val hand: Hand = Hand()) 
         return playerName.value == other
     }
 
+    fun bet(bettingMoney: Money) {
+        money = bettingMoney
+    }
+
+    fun matchOf(other: Participant): MatchType {
+        return when {
+            other.isBust -> MatchType.WIN
+            isBust -> MatchType.LOSE
+            else -> MatchType.evaluate(hand.bustGap(), other.bustGap)
+        }
+    }
+
     companion object {
         fun from(name: String): Player {
             return Player(playerName = EntrantName(name))

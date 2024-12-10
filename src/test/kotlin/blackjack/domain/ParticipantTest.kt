@@ -9,7 +9,7 @@ class ParticipantTest {
         val player = Player.from("player")
         player.receive(Deck(listOf(Card(CardRank.ACE, Suit.CLUB), Card(CardRank.KING, Suit.CLUB))))
 
-        assertThat(player.matchBlackjack()).isTrue()
+        assertThat(player.isBlackJack()).isTrue()
     }
 
     @Test
@@ -17,7 +17,7 @@ class ParticipantTest {
         val dealer = Dealer()
         dealer.receive(Deck(listOf(Card(CardRank.ACE, Suit.CLUB), Card(CardRank.KING, Suit.CLUB))))
 
-        assertThat(dealer.matchBlackjack()).isTrue()
+        assertThat(dealer.isBlackJack()).isTrue()
     }
 
     @Test
@@ -25,6 +25,6 @@ class ParticipantTest {
         val player = Player.from("player")
         player.receive(Deck(listOf(Card(CardRank.QUEEN, Suit.CLUB), Card(CardRank.NINE, Suit.CLUB), Card(CardRank.TWO, Suit.CLUB))))
 
-        assertThat(player.matchBlackjack()).isFalse()
+        assertThat(player.isBlackJack()).isFalse()
     }
 }

@@ -1,10 +1,8 @@
 package blackjack.domain
 
-import blackjack.domain.ResultStatistics.Constant.DRAW_STATISTICS
-import blackjack.domain.ResultStatistics.Constant.LOSE_STATISTICS
-import blackjack.domain.ResultStatistics.Constant.WIN_STATISTICS
-
-sealed class Participant(private val hand: Hand) {
+sealed class Participant(private val hand: Hand, var money : Money = Money.ZERO) {
+    val bettingAmount: Money
+        get() = money
     val isBust: Boolean
         get() = hand.isBust
     val totalCards: Deck
@@ -20,23 +18,15 @@ sealed class Participant(private val hand: Hand) {
         hand.add(cards.values())
     }
 
-    fun matchToStatistics(other: Participant): ResultStatistics {
-        return when (matchOf(other)) {
-            MatchType.WIN -> WIN_STATISTICS
-            MatchType.LOSE -> LOSE_STATISTICS
-            else -> DRAW_STATISTICS
-        }
+    fun evenMoney(): Money {
+        return money.evenMoney()
     }
 
-    fun matchBlackjack(): Boolean {
+    fun isBlackJack() : Boolean {
         return hand.isBackJack()
     }
 
-    private fun matchOf(other: Participant): MatchType {
-        return when {
-            isBust -> MatchType.LOSE
-            other.isBust -> MatchType.WIN
-            else -> MatchType.evaluate(hand.bustGap(), other.hand.bustGap())
-        }
+    fun profit(other: Money): Money {
+        return other - money
     }
 }

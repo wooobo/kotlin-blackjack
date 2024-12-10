@@ -1,16 +1,9 @@
 package blackjack
 
-import blackjack.domain.Card
-import blackjack.domain.CardRank
-import blackjack.domain.Dealer
-import blackjack.domain.Deck
-import blackjack.domain.Players
-import blackjack.domain.Suit
-import blackjack.ui.DealerResult
+import blackjack.domain.*
+import blackjack.infra.AmountStatistics
 import blackjack.ui.DisplayCard
-import blackjack.ui.FinalWinnerResults
 import blackjack.ui.RoundResult
-import blackjack.ui.UIMatchType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -85,16 +78,19 @@ class GameResultEvaluatorTest {
         userACards: List<Card>,
         userBCards: List<Card>,
         dealerCards: List<Card>,
-        userAResult: UIMatchType,
-        userBResult: UIMatchType,
-        dealerResult: DealerResult,
+        userAResult: Int,
+        userBResult: Int,
+        dealerResult: Int,
     ) {
         val players = Players.from(listOf("userA", "userB"))
+        players.betting("userA", Money(1_000))
+        players.betting("userB", Money(1_000))
         val dealer = Dealer()
         players.deal(
             players.find("userA"),
             Deck(userACards),
         )
+
         players.deal(
             players.find("userB"),
             Deck(userBCards),
@@ -104,12 +100,12 @@ class GameResultEvaluatorTest {
         )
         val gameResultEvaluator = GameResultEvaluator(players, dealer)
 
-        val actual: FinalWinnerResults = gameResultEvaluator.finalMatchEvaluate()
+        val actual: AmountStatistics = gameResultEvaluator.finalMatchEvaluate()
 
         assertAll(
-            { assertThat(actual.playerResults["userA"]).isEqualTo(userAResult) },
-            { assertThat(actual.playerResults["userB"]).isEqualTo(userBResult) },
-            { assertThat(actual.dealerResult).isEqualTo(dealerResult) },
+            { assertThat(actual.playerProfits["userA"]).isEqualTo(Money(userAResult)) },
+            { assertThat(actual.playerProfits["userB"]).isEqualTo(Money(userBResult)) },
+            { assertThat(actual.dealerProfit).isEqualTo(Money(dealerResult)) },
         )
     }
 
@@ -130,50 +126,49 @@ class GameResultEvaluatorTest {
                         Card(CardRank.ACE, Suit.HEART),
                         Card(CardRank.ACE, Suit.SPADE),
                     ),
-                    UIMatchType.LOSS,
-                    UIMatchType.LOSS,
-                    DealerResult(2, 0, 0),
-                ),
+                    -1000,
+                    -1000,
+                    2_000,
+                ),// 유저 모두 패배
                 Arguments.of(
                     listOf(
                         Card(CardRank.JACK, Suit.DIAMOND),
                         Card(CardRank.JACK, Suit.HEART),
                         Card(CardRank.TWO, Suit.DIAMOND),
-                    ),
+                    ), // 버스트
                     listOf(
                         Card(CardRank.JACK, Suit.DIAMOND),
                         Card(CardRank.JACK, Suit.HEART),
-                        Card(CardRank.ACE, Suit.SPADE),
-                    ),
+                        Card(CardRank.TWO, Suit.SPADE),
+                    ), // 버스트
                     listOf(
                         Card(CardRank.JACK, Suit.DIAMOND),
                         Card(CardRank.JACK, Suit.HEART),
-                        Card(CardRank.ACE, Suit.SPADE),
-                    ),
-                    UIMatchType.LOSS,
-                    UIMatchType.DRAW,
-                    DealerResult(1, 0, 1),
-                ),
+                        Card(CardRank.TWO, Suit.SPADE),
+                    ), // 버스트
+                    1_000,
+                    1_000,
+                    0,
+                ), // 딜러 버스트
                 Arguments.of(
                     listOf(
                         Card(CardRank.JACK, Suit.DIAMOND),
                         Card(CardRank.ACE, Suit.DIAMOND),
                         Card(CardRank.JACK, Suit.HEART),
                         Card(CardRank.ACE, Suit.SPADE),
-                    ),
+                    ), // 버스트
                     listOf(
                         Card(CardRank.JACK, Suit.DIAMOND),
                         Card(CardRank.JACK, Suit.HEART),
                         Card(CardRank.ACE, Suit.SPADE),
-                    ),
+                    ), // 블랙잭
                     listOf(
                         Card(CardRank.JACK, Suit.DIAMOND),
                         Card(CardRank.JACK, Suit.HEART),
-                        Card(CardRank.JACK, Suit.SPADE),
-                    ),
-                    UIMatchType.WIN,
-                    UIMatchType.WIN,
-                    DealerResult(0, 2, 0),
+                    ), // 20
+                    -1_000,
+                    1_000,
+                    1000,
                 ),
             )
         }
